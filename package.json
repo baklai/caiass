@@ -1,0 +1,19 @@
+{
+  "name": "caiass",
+  "version": "1.0.0",
+  "description": "Chat AI Assistant",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "start:dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.9.0",
+    "dotenv": "^17.2.3",
+    "ollama": "^0.6.2",
+    "readline": "^1.3.0",
+    "telegram": "^2.26.22"
+  }
+}
