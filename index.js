@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import ollama from 'ollama';
 import readline from 'readline';
-import { TelegramClient } from 'telegram';
+import { Api, TelegramClient } from 'telegram';
 import { NewMessage } from 'telegram/events/index.js';
 import { StringSession } from 'telegram/sessions/index.js';
 
@@ -150,20 +150,40 @@ const rl = readline.createInterface({
 
     userMessages[senderId].push({ role: 'user', content: message.text });
 
-    const response = await ollama.chat({
+    const stream = await ollama.chat({
       model: GPT_MODEL,
       messages: [SYSTEM_MESSAGE, ...userMessages[senderId]],
       max_tokens: 250,
-      stream: false
+      stream: true
     });
 
-    if (response?.message?.content) {
-      console.info('Me:', response.message.content);
+    let content = '';
+    let isTyping = false;
+
+    for await (const chunk of stream) {
+      if (chunk.message.content) {
+        if (!isTyping) {
+          await client.invoke(
+            new Api.messages.SetTyping({
+              peer: sender,
+              action: new Api.SendMessageTypingAction({})
+            })
+          );
+        }
+
+        isTyping = !isTyping;
+
+        content += chunk.message.content;
+      }
+    }
+
+    if (content) {
       userMessages[senderId].push({
         role: 'assistant',
-        content: response.message.content
+        content: content
       });
-      await client.sendMessage(sender, { message: response.message.content });
+
+      await client.sendMessage(sender, { message: content });
     }
   }
 

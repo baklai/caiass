@@ -6,3 +6,7 @@ export const getId = (entityOrId) => {
   if (entityOrId.id) return getId(entityOrId.id);
   return String(entityOrId);
 };
+
+export const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
