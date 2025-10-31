@@ -150,27 +150,20 @@ const rl = readline.createInterface({
 
     userMessages[senderId].push({ role: 'user', content: message.text });
 
-    let content = '';
-
-    for await (const chunk of ollama.chat({
+    const response = await ollama.chat({
       model: GPT_MODEL,
       messages: [SYSTEM_MESSAGE, ...userMessages[senderId]],
       max_tokens: 250,
-      stream: true
-    })) {
-      if (chunk.message.content) {
-        content += chunk.message.content;
-        await client.sendChatAction(sender, 'typing');
-      }
-    }
+      stream: false
+    });
 
-    if (content.length > 0) {
-      console.info('Me:', content);
+    if (response?.message?.content) {
+      console.info('Me:', response.message.content);
       userMessages[senderId].push({
         role: 'assistant',
-        content: content
+        content: response.message.content
       });
-      await client.sendMessage(sender, { message: content });
+      await client.sendMessage(sender, { message: response.message.content });
     }
   }
 
