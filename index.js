@@ -79,7 +79,12 @@ const rl = readline.createInterface({
     for await (const dialog of client.iterDialogs({ limit: 100 })) {
       if (dialog.isUser && dialog.entity?.id && !dialog.entity.bot) {
         dialogs.push({
-          name: dialog.entity.username || dialog.entity.id.toString(),
+          name:
+            `${dialog.entity?.firstName || ''} ${
+              dialog.entity?.lastName || ''
+            }`.trim() ||
+            dialog.entity.username ||
+            dialog.entity.id.toString(),
           value: dialog.entity.id.toString()
         });
       }
@@ -98,7 +103,7 @@ const rl = readline.createInterface({
 
       writeFileSync(USERS_FILE, allowedUsers.join('\n'));
 
-      console.info('✅ Selected users:\n', allowedUsers.join('\n'));
+      console.info('✅ Selected users:', allowedUsers.join(', '));
     }
 
     if (allowedUsers.length === 0) {
@@ -106,7 +111,7 @@ const rl = readline.createInterface({
     }
   }
 
-  console.info('✅ Allowed users:\n', allowedUsers.join(', '));
+  console.info('✅ Allowed users:', allowedUsers.join(', '));
 
   const userMessages = {};
 
@@ -115,7 +120,7 @@ const rl = readline.createInterface({
 
     userMessages[allowedUser] = [];
 
-    for await (const msg of client.iterMessages(userEntity, { limit: 100 })) {
+    for await (const msg of client.iterMessages(userEntity, { limit: 500 })) {
       if (!msg.text || msg.text.trim() === '') continue;
 
       const senderId = msg.senderId?.toString();
@@ -141,20 +146,31 @@ const rl = readline.createInterface({
 
     if (!senderId || !allowedUsers.includes(senderId)) return;
 
+    console.info(`User ${senderId}:`, message.text);
+
     userMessages[senderId].push({ role: 'user', content: message.text });
 
-    const response = await ollama.chat({
+    let content = '';
+
+    for await (const chunk of ollama.chat({
       model: GPT_MODEL,
       messages: [SYSTEM_MESSAGE, ...userMessages[senderId]],
-      stream: false
-    });
+      max_tokens: 250,
+      stream: true
+    })) {
+      if (chunk.message.content) {
+        content += chunk.message.content;
+        await client.sendChatAction(sender, 'typing');
+      }
+    }
 
-    if (response?.message?.content) {
+    if (content.length > 0) {
+      console.info('Me:', content);
       userMessages[senderId].push({
         role: 'assistant',
-        content: response.message.content
+        content: content
       });
-      await client.sendMessage(sender, { message: response.message.content });
+      await client.sendMessage(sender, { message: content });
     }
   }
 
