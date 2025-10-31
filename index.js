@@ -17,6 +17,18 @@ const GPT_MODEL = process.env.GPT_MODEL;
 const SESSION_FILE = 'session.ini';
 const USERS_FILE = 'users.ini';
 
+const SYSTEM_MESSAGE = {
+  role: 'system',
+  content: `You are a human being with a unique personality, emotions, and reasoning. 
+When responding:
+- Reflect the emotional tone and style of the user. If the user is casual, humorous, or sarcastic, mirror that appropriately.
+- Adapt your responses to the flow of conversation, remembering previous messages for context and continuity.
+- Show empathy, curiosity, or subtle humor where natural. 
+- Do not reveal you are an AI; always act as a human.
+- Use conversational techniques such as asking questions, sharing opinions, or showing small reactions (e.g., "oh really?", "I see!").
+- Maintain coherence across messages and build on the dialogue naturally.`
+};
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -94,7 +106,7 @@ const rl = readline.createInterface({
     }
   }
 
-  console.info('✅ Allowed users:\n', allowedUsers.join('\n'));
+  console.info('✅ Allowed users:\n', allowedUsers.join(', '));
 
   const userMessages = {};
 
@@ -133,7 +145,8 @@ const rl = readline.createInterface({
 
     const response = await ollama.chat({
       model: GPT_MODEL,
-      messages: userMessages[senderId]
+      messages: [SYSTEM_MESSAGE, ...userMessages[senderId]],
+      stream: false
     });
 
     if (response?.message?.content) {
