@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+
 export const getId = (entityOrId) => {
   if (!entityOrId) return null;
   if (typeof entityOrId === 'bigint' || typeof entityOrId === 'number')
@@ -9,4 +11,14 @@ export const getId = (entityOrId) => {
 
 export const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const safeReadJson = (filePath, fallback = {}) => {
+  if (!existsSync(filePath)) return fallback;
+  try {
+    const content = readFileSync(filePath, 'utf8').trim();
+    return content ? JSON.parse(content) : fallback;
+  } catch {
+    return fallback;
+  }
 };
