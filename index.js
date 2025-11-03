@@ -1,10 +1,9 @@
-import { checkbox } from '@inquirer/prompts';
+import { checkbox, input } from '@inquirer/prompts';
 import { spawn } from 'child_process';
 import dotenv from 'dotenv';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import ollama from 'ollama';
-import readline from 'readline';
 import { Api, TelegramClient } from 'telegram';
 import { NewMessage } from 'telegram/events/index.js';
 import { StringSession } from 'telegram/sessions/index.js';
@@ -43,11 +42,6 @@ When responding:
 - Maintain coherence across messages and build on the dialogue naturally.`
 };
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
 (async () => {
   const sessionString = existsSync(path.join('temp', SESSION_FILE))
     ? readFileSync(path.join('temp', SESSION_FILE), 'utf8')
@@ -60,12 +54,9 @@ const rl = readline.createInterface({
   });
 
   await client.start({
-    phoneNumber: async () =>
-      new Promise(resolve => rl.question('Please enter your number: ', resolve)),
-    password: async () =>
-      new Promise(resolve => rl.question('Please enter your password: ', resolve)),
-    phoneCode: async () =>
-      new Promise(resolve => rl.question('Please enter the code you received: ', resolve)),
+    phoneNumber: async () => await input({ message: 'Please enter your number: ' }),
+    password: async () => await input({ message: 'Please enter your password: ' }),
+    phoneCode: async () => await input({ message: 'Please enter the code you received: ' }),
     onError: err => console.error(err)
   });
 
@@ -201,5 +192,4 @@ const rl = readline.createInterface({
   client.addEventHandler(eventMessage, new NewMessage({}));
 
   console.info("🤖 The bot is ready. We're waiting for messages....");
-  rl.close();
 })();
