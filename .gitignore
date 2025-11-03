@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Session files
 temp/
+
+# Package lock file
+package-lock.json
