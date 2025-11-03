@@ -125,9 +125,7 @@ const rl = readline.createInterface({
   for (const key in selectedDialogs) {
     const userEntity = await client.getEntity(key);
 
-    for await (const msg of client.iterMessages(userEntity, {
-      limit: 500
-    })) {
+    for await (const msg of client.iterMessages(userEntity, { limit: 500 })) {
       if (!msg.text || msg.text.trim() === '') continue;
 
       const senderId = msg.senderId?.toString();
