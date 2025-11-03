@@ -172,6 +172,8 @@ When responding:
     }
 
     if (content) {
+      console.info(`Assistant:`, content);
+
       selectedDialogs[senderId].messages.push({
         role: 'assistant',
         content: content
