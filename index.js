@@ -18,7 +18,8 @@ if (!existsSync('temp')) {
 const SESSION_FILE = 'session';
 const DIALOGS_FILE = 'dialogs';
 
-const MSG_LIMIT = 500;
+const LIMIT_MESSAGES = 500;
+const LIMIT_DIALOGS = 100;
 
 const API_ID = Number(process.env.API_ID);
 const API_HASH = process.env.API_HASH;
@@ -65,7 +66,7 @@ When responding:
     console.info('⚙️ Select dialogs to allow:\n');
 
     const dialogs = [];
-    for await (const dialog of client.iterDialogs({ limit: MSG_LIMIT })) {
+    for await (const dialog of client.iterDialogs({ limit: LIMIT_DIALOGS })) {
       if (dialog.isUser && dialog.entity?.id && !dialog.entity.bot) {
         const username =
           `${dialog.entity?.firstName || ''} ${dialog.entity?.lastName || ''}`.trim() ||
@@ -123,7 +124,7 @@ When responding:
       selectedDialogs[senderId].messages = [];
       const userEntity = await client.getEntity(senderId);
 
-      for await (const msg of client.iterMessages(userEntity, { limit: 500 })) {
+      for await (const msg of client.iterMessages(userEntity, { limit: LIMIT_MESSAGES })) {
         if (!msg.text || msg.text.trim() === '') continue;
 
         const senderId = msg.senderId?.toString();
