@@ -1,5 +1,4 @@
 import { checkbox, input } from '@inquirer/prompts';
-import { spawn } from 'child_process';
 import dotenv from 'dotenv';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -15,13 +14,6 @@ dotenv.config();
 if (!existsSync('temp')) {
   mkdirSync('temp', { recursive: true });
 }
-
-spawn('ollama', ['serve'], {
-  detached: true,
-  stdio: 'ignore'
-}).unref();
-
-console.info('✅ Ollama server started');
 
 const SESSION_FILE = 'session';
 const DIALOGS_FILE = 'dialogs';
