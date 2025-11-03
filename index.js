@@ -61,18 +61,12 @@ const rl = readline.createInterface({
 
   await client.start({
     phoneNumber: async () =>
-      new Promise((resolve) =>
-        rl.question('Please enter your number: ', resolve)
-      ),
+      new Promise(resolve => rl.question('Please enter your number: ', resolve)),
     password: async () =>
-      new Promise((resolve) =>
-        rl.question('Please enter your password: ', resolve)
-      ),
+      new Promise(resolve => rl.question('Please enter your password: ', resolve)),
     phoneCode: async () =>
-      new Promise((resolve) =>
-        rl.question('Please enter the code you received: ', resolve)
-      ),
-    onError: (err) => console.error(err)
+      new Promise(resolve => rl.question('Please enter the code you received: ', resolve)),
+    onError: err => console.error(err)
   });
 
   console.info('✅ Connected as:', (await client.getMe()).username);
@@ -89,9 +83,7 @@ const rl = readline.createInterface({
     for await (const dialog of client.iterDialogs({ limit: 100 })) {
       if (dialog.isUser && dialog.entity?.id && !dialog.entity.bot) {
         const username =
-          `${dialog.entity?.firstName || ''} ${
-            dialog.entity?.lastName || ''
-          }`.trim() ||
+          `${dialog.entity?.firstName || ''} ${dialog.entity?.lastName || ''}`.trim() ||
           dialog.entity.username ||
           dialog.entity.id.toString();
         dialogs.push({

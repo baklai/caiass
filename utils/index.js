@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-export const getId = (entityOrId) => {
+export const getId = entityOrId => {
   if (!entityOrId) return null;
   if (typeof entityOrId === 'bigint' || typeof entityOrId === 'number')
     return entityOrId.toString();
@@ -9,8 +9,8 @@ export const getId = (entityOrId) => {
   return String(entityOrId);
 };
 
-export const sleep = (ms) => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
 };
 
 export const safeReadJson = (filePath, fallback = {}) => {
