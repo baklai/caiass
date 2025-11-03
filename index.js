@@ -86,7 +86,7 @@ When responding:
       });
 
       for (const select of selected) {
-        selectedDialogs[select.id] = { ...select, messages: [] };
+        selectedDialogs[select.id] = { ...select };
       }
 
       writeFileSync(
@@ -105,29 +105,6 @@ When responding:
 
   console.table(selectedDialogs);
 
-  for (const key in selectedDialogs) {
-    const userEntity = await client.getEntity(key);
-
-    for await (const msg of client.iterMessages(userEntity, { limit: 500 })) {
-      if (!msg.text || msg.text.trim() === '') continue;
-
-      const senderId = msg.senderId?.toString();
-      const userId = userEntity.id?.toString();
-
-      if (senderId === userId) {
-        selectedDialogs[key].messages.unshift({
-          role: 'user',
-          content: msg.text
-        });
-      } else {
-        selectedDialogs[key].messages.unshift({
-          role: 'assistant',
-          content: msg.text
-        });
-      }
-    }
-  }
-
   async function eventMessage(event) {
     const message = event.message;
     if (!event.isPrivate || !message.text) return;
@@ -136,6 +113,33 @@ When responding:
     const senderId = getId(sender);
 
     if (!senderId || !selectedDialogs.hasOwnProperty(senderId)) return;
+
+    if (
+      selectedDialogs[senderId]?.messages === undefined ||
+      selectedDialogs[senderId]?.messages?.length === 0
+    ) {
+      selectedDialogs[senderId].messages = [];
+      const userEntity = await client.getEntity(senderId);
+
+      for await (const msg of client.iterMessages(userEntity, { limit: 500 })) {
+        if (!msg.text || msg.text.trim() === '') continue;
+
+        const senderId = msg.senderId?.toString();
+        const userId = userEntity.id?.toString();
+
+        if (senderId === userId) {
+          selectedDialogs[senderId].messages.unshift({
+            role: 'user',
+            content: msg.text
+          });
+        } else {
+          selectedDialogs[senderId].messages.unshift({
+            role: 'assistant',
+            content: msg.text
+          });
+        }
+      }
+    }
 
     console.info(`${selectedDialogs[senderId].username}:`, message.text);
 
