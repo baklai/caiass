@@ -19,7 +19,7 @@ TG Chat AI Assistant is a Telegram bot that allows you to interact with an AI as
 1. Clone the repository:
 
 ```bash
-git clone [https://github.com/baklai/caiass.git](https://github.com/baklai/tg-chat-ai-assistant)
+git clone https://github.com/baklai/tg-chat-ai-assistant
 cd caiass
 ```
 
