@@ -1,6 +1,6 @@
-# CAIASS - Chat AI Assistant
+# TG Chat AI Assistant
 
-CAIASS is a Telegram bot that allows you to interact with an AI assistant (using Ollama GPT models) via private messages. The bot maintains a chat history per user and responds only to selected users.
+TG Chat AI Assistant is a Telegram bot that allows you to interact with an AI assistant (using Ollama GPT models) via private messages. The bot maintains a chat history per user and responds only to selected users.
 
 ---
 
