@@ -18,6 +18,8 @@ if (!existsSync('temp')) {
 const SESSION_FILE = 'session';
 const DIALOGS_FILE = 'dialogs';
 
+const MSG_LIMIT = 500;
+
 const API_ID = Number(process.env.API_ID);
 const API_HASH = process.env.API_HASH;
 const GPT_MODEL = process.env.GPT_MODEL;
@@ -63,7 +65,7 @@ When responding:
     console.info('⚙️ Select dialogs to allow:\n');
 
     const dialogs = [];
-    for await (const dialog of client.iterDialogs({ limit: 100 })) {
+    for await (const dialog of client.iterDialogs({ limit: MSG_LIMIT })) {
       if (dialog.isUser && dialog.entity?.id && !dialog.entity.bot) {
         const username =
           `${dialog.entity?.firstName || ''} ${dialog.entity?.lastName || ''}`.trim() ||
