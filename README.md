@@ -1,6 +1,6 @@
 # TG Chat AI Assistant
 
-TG Chat AI Assistant is a Telegram bot that allows you to interact with an AI assistant (using Ollama GPT models) via private messages. The bot maintains a chat history per user and responds only to selected users.
+TG Chat AI Assistant is a Telegram application that enables interaction with an AI assistant (powered by locally hosted Ollama GPT models) through private messages. The application keeps a chat history for each user and responds only to selected users.
 
 ---
 
