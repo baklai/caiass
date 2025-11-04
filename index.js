@@ -55,9 +55,12 @@ When responding:
     onError: err => console.error(err)
   });
 
-  console.info('✅ Connected as:', (await client.getMe()).username);
+  const me = await client.getMe();
+
+  console.info('✅ Connected as:', `${me?.firstName} ${me?.lastName} (${me?.username})`.trim());
 
   const session = client.session.save();
+
   writeFileSync(path.join('temp', SESSION_FILE), session);
 
   const selectedDialogs = safeReadJson(path.join('temp', DIALOGS_FILE), {});
@@ -108,6 +111,31 @@ When responding:
 
   console.table(selectedDialogs);
 
+  for (const key in selectedDialogs) {
+    selectedDialogs[key].messages = [];
+
+    const userEntity = await client.getEntity(key);
+
+    for await (const msg of client.iterMessages(userEntity, { limit: LIMIT_MESSAGES })) {
+      if (!msg.text || msg.text.trim() === '') continue;
+
+      const fromId = msg.fromId?.userId?.toString();
+      const meId = me.id.toString();
+
+      if (fromId === meId) {
+        selectedDialogs[key].messages.unshift({
+          role: 'assistant',
+          content: msg.text
+        });
+      } else {
+        selectedDialogs[key].messages.unshift({
+          role: 'user',
+          content: msg.text
+        });
+      }
+    }
+  }
+
   async function eventMessage(event) {
     const message = event.message;
     if (!event.isPrivate || !message.text) return;
@@ -117,33 +145,6 @@ When responding:
 
     if (!senderId || !selectedDialogs.hasOwnProperty(senderId)) return;
 
-    if (
-      selectedDialogs[senderId]?.messages === undefined ||
-      selectedDialogs[senderId]?.messages?.length === 0
-    ) {
-      selectedDialogs[senderId].messages = [];
-      const userEntity = await client.getEntity(senderId);
-
-      for await (const msg of client.iterMessages(userEntity, { limit: LIMIT_MESSAGES })) {
-        if (!msg.text || msg.text.trim() === '') continue;
-
-        const senderId = msg.senderId?.toString();
-        const userId = userEntity.id?.toString();
-
-        if (senderId === userId) {
-          selectedDialogs[senderId].messages.unshift({
-            role: 'user',
-            content: msg.text
-          });
-        } else {
-          selectedDialogs[senderId].messages.unshift({
-            role: 'assistant',
-            content: msg.text
-          });
-        }
-      }
-    }
-
     console.info(`${selectedDialogs[senderId].username}:`, message.text);
 
     selectedDialogs[senderId].messages.push({
@@ -151,7 +152,7 @@ When responding:
       content: message.text
     });
 
-    const stream = await ollama.chat({
+    const response = await ollama.chat({
       model: GPT_MODEL,
       messages: [SYSTEM_MESSAGE, ...selectedDialogs[senderId].messages],
       max_tokens: 250,
@@ -159,21 +160,15 @@ When responding:
     });
 
     let content = '';
-    let isTyping = false;
 
-    for await (const chunk of stream) {
+    for await (const chunk of response) {
       if (chunk.message.content) {
-        if (!isTyping) {
-          await client.invoke(
-            new Api.messages.SetTyping({
-              peer: sender,
-              action: new Api.SendMessageTypingAction({})
-            })
-          );
-        }
-
-        isTyping = !isTyping;
-
+        await client.invoke(
+          new Api.messages.SetTyping({
+            peer: sender,
+            action: new Api.SendMessageTypingAction({})
+          })
+        );
         content += chunk.message.content;
       }
     }
