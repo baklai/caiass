@@ -116,8 +116,21 @@ When responding:
 
     const userEntity = await client.getEntity(key);
 
-    for await (const msg of client.iterMessages(userEntity, { limit: LIMIT_MESSAGES })) {
-      if (!msg.text || msg.text.trim() === '') continue;
+    for await (const msg of client.iterMessages(userEntity, {
+      limit: LIMIT_MESSAGES,
+      filter: Api.InputMessagesFilterEmpty,
+      reverse: false
+    })) {
+      if (
+        !msg.text ||
+        !msg.text.trim().length ||
+        msg.media ||
+        msg.webPreview ||
+        msg.message?.startsWith('https://') ||
+        msg.message?.startsWith('http://')
+      ) {
+        continue;
+      }
 
       const fromId = msg.fromId?.userId?.toString();
       const meId = me.id.toString();
